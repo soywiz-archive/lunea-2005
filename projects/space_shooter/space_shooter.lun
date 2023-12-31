@@ -1,0 +1,187 @@
+__cpp {
+	Bitmap bmp_spaceship;
+	Bitmap bmp_bullet;
+	Bitmap bmp_star;
+	Bitmap bmp_cursor;
+
+	#define pi2350 0.017453292519943295769236907684886
+
+	#define draw_default draw_bitmap(bitmap, NULL, x, y, cx, cy, (float)(alpha / (float)255), (float)((float)size / 100), angle);
+
+	#define get_rand(min, max)
+
+	int mt_rand(int min, int max) {
+		srand(rand());
+		return ((rand() % (max - min)) + min);
+	}
+
+	#define advance(pix) { this->x -= (int)(cosf((angle + 90) * (float)pi2350) * (float)pix); this->y -= (int)(sinf((angle + 90) * (float)pi2350) * (float)pix); }
+	//#define advance(pix) { this->x -= (int)(cosf(angle) * pix); this->y -= (int)(sinf(angle) * pix); }
+}
+
+config {
+	driver:           "clanlib";
+	//driver:           "none";
+
+	output:           "space_shooter.exe";
+
+	icon:             "space_shooter.ico";
+
+	comments:         "Space Shooter Lunea Example";
+	companyname:      "Wiz";
+	filedescription:  "Free Space Shooter";
+	fileversion:      "1, 0, 0, 0";
+	internalname:     "space_shooter";
+	legalcopyright:   "(C) Copyleft";
+	legaltrademarks:  "";
+	productname:      "Space Shooter";
+	productversion:   "1, 0, 0, 0";
+
+	resource:         "resources\\*.png";
+}
+
+process star(int mx, int my, double mn, double timr, int rsize) {
+	action main {
+		bitmap = bmp_star;
+
+		cx = bitmap_width (bitmap) / 2;
+		cy = bitmap_height(bitmap) / 2;
+
+		double n = mn;
+
+		mouse.hide();
+
+		while (true) {
+			n = n + timr;
+
+			priority = father.priority + 1;
+			x = mx + father.x;
+			y = my + father.y;
+
+			size  = (int)(((double)sinf((float)n)) * (double)12) + rsize;
+			alpha = (int)(((double)sinf((float)n)) * (double)42) + 170;
+			angle = angle + (float)0.7;
+			z = 300;
+
+			frame;
+		}
+
+	}
+
+	draw { draw_default; }
+}
+
+process starfield() {
+	action main {
+		for (int n = 0; n < 150; n++) {
+			new star(mt_rand(0, 659), mt_rand(0, 479), ((double)mt_rand(0, 50)) / 25, ((double)mt_rand(30, 60)) / 1000, mt_rand(60, 110));
+		}
+
+		while (true) {
+			frame;
+		}
+	}
+}
+
+process cursor() {
+	action main {
+		bitmap = bmp_cursor;
+		cx = cy = 0;
+
+		mouse.hide();
+
+		while (true) {
+			x = mouse.x;
+			y = mouse.y;
+
+			frame;
+		}
+	}
+
+	draw { draw_default; }
+}
+
+process bullet(int mx, int my, float pangle) {
+	action main {
+		bitmap = bmp_bullet;
+
+		x = mx; y = my;
+		angle = pangle;
+		size = 125;
+		while (true) {
+			advance(7);
+			frame;
+		}
+	}
+
+	draw { draw_default; }
+}
+
+process player_ship(Bitmap bmp, int mx, int my) {
+	action main {
+		bitmap = ( Bitmap )bmp;
+
+		//bitmap = ((start)father).bitmap;
+
+		cx = bitmap_width(bitmap)  / 2;
+		cy = bitmap_height(bitmap) / 2;
+		z = father.z + 1;
+
+		double n = 0;
+
+		y = my;
+		x = mx;
+
+		int cp = 0;
+
+		size = 125;
+
+		while (true) {
+			n = n + 0.06;
+
+			z = 100 - (int)(((double)sinf((float)n)) * (double)55);
+
+			if (key(KEY_LEFT)) angle -= 3;
+			if (key(KEY_RIGHT)) angle += 3;
+			if (key(KEY_UP)) advance(4);
+
+			if (cp > 0) cp--;
+
+			if (key(KEY_LCONTROL) && cp == 0) {
+				advance(30);
+
+				new bullet(x, y, angle);
+
+				advance(-30);
+
+				cp = 13;
+			}
+
+			frame;
+		}
+	}
+
+	draw { draw_default; draw_bitmap(bitmap, NULL, x, y, cx, cy, (float)(alpha / (float)255), (float)((float)size / 100), angle); }
+}
+
+process start() {
+	action main {
+		bmp_spaceship = bitmap_load_from_resource("resources\\spaceship.png");
+		bmp_bullet    = bitmap_load_from_resource("resources\\bullet.png");
+		bmp_star      = bitmap_load_from_resource("resources\\star.png");
+		bmp_cursor    = bitmap_load_from_resource("resources\\cursor.png");
+
+		cx = bitmap_width(bitmap)  / 2;
+		cy = bitmap_height(bitmap) / 2;
+
+		new cursor();
+		new player_ship(bmp_spaceship, 320, 240);
+
+		new starfield();
+
+		while (true) frame;
+	}
+
+	draw {
+	}
+}

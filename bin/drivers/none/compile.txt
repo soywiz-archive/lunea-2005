@@ -1,0 +1,1 @@
+/D "WIN32" /D "NDEBUG" /D "_CONSOLE" /MD /O1 /Op /GL /GA /FD /EHsc /MD /GS /W3 /Wp64 /TP

@@ -1,0 +1,33 @@
+music {
+	music_load
+	music_load_from_resource
+	music_play
+	music_stop
+	music_volume_set
+	music_volume_get
+	music_playing
+	music_length
+	music_length_rest
+}
+
+sound {
+}
+
+bitmap {
+	bitmap_load
+	bitmap_load_from_resource
+	bitmap_draw
+	bitmap_create
+	bitmap_width
+	bitmap_height
+}
+
+file {
+	file_open
+	file_read
+	file_write
+	file_seek
+	file_tell
+	file_close
+	file_open_read
+}

@@ -1,0 +1,196 @@
+/*
+config {
+	driver:           "clanlib";	
+	output:           "test.exe";
+}
+
+process start() {
+	const char *ptr;
+	int lm;
+	
+	void test() {		
+		//echo "test";
+		//ptr "bug";
+		lm = 10;			
+	}
+	
+	action main {
+		test();
+		while (true) frame;
+	}
+	
+	draw {
+	}
+}
+*/
+
+
+__cpp {
+	#include <string>
+	
+	Music  mus;
+	Bitmap milogo;
+	Font   mfont;
+}
+
+config {
+	driver:           "clanlib";
+	//driver:           "none";
+	
+	output:           "lunea.exe";
+
+	icon:             "icon.ico";
+
+	comments:         "Comments";
+	companyname:      "CompanyName";
+	filedescription:  "FileDescription";
+	fileversion:      "1, 0, 0, 1";
+	internalname:     "InternalName";
+	legalcopyright:   "LegalCopyright";
+	legaltrademarks:  "LegalTrademarks";
+	productname:      "ProductName";
+	productversion:   "1, 0, 0, 1";
+	
+	resource:         "logo.png";
+	resource:         "test.png";
+	resource:         "cursor.png";
+	resource:         "guitarou.mod";
+}
+
+process cursor() {
+	action main {
+		bitmap = bitmap_load_from_resource("cursor.png");
+		cx = cy = 0;
+		
+		mouse.hide();
+		
+		//bool muss = true;
+		
+		while (true) {
+			x = mouse.x;
+			y = mouse.y;
+			
+			frame;
+		}
+	}
+	
+	draw {
+		draw_bitmap(bitmap, NULL, x, y, cx, cy, (float)(alpha / (float)255), (float)((float)size / 100), angle);
+	}
+}
+
+process button(int x, int y, int sx, int sy, int z) {
+	int draw_status;
+	
+	// ERROR:
+	
+	char *cltext;
+	
+	void onClick() {
+		if (!music_playing()) {
+			music_play(mus);
+			cltext = "music (Off)";
+		} else {
+			music_stop();
+			cltext = "music (On)";
+		}
+	}	
+	
+	action main {
+		cltext = "music (On)";
+		draw_status = 0;
+		
+		while (true) {
+			if (
+				(mouse.x >= x && mouse.x <= x + sx) &&
+				(mouse.y >= y && mouse.y <= y + sy)
+			) {
+				if (draw_status == 2 && !mouse.left) onClick();
+				draw_status = (mouse.left) ? 2 : 1;
+			} else {
+				draw_status = 0;
+			}
+			frame;
+		}
+	}
+	
+	draw {
+		if (draw_status == 0) {
+			draw_rect_fill(NULL, x, y, x + sx, y + sy, color_make(200, 200, 200));
+			draw_rect(NULL, x, y, x + sx, y + sy, color_make(100, 100, 100));
+		} else if (draw_status == 1) {
+			draw_rect_fill(NULL, x, y, x + sx, y + sy, color_make(220, 220, 220));
+			draw_rect(NULL, x, y, x + sx, y + sy, color_make(140, 140, 140));
+		} else {
+			draw_rect_fill(NULL, x, y, x + sx, y + sy, color_make(180, 180, 180));
+			draw_rect(NULL, x, y, x + sx, y + sy, color_make(80, 80, 80));
+		}
+		
+		draw_font(mfont, NULL, cltext, x + (sx / 2), y + (sy / 2), color_make(80, 80, 160), FONT_H_CENTER | FONT_V_CENTER);
+	}
+}
+
+process test(Bitmap bmp, int mx, int my) {
+	action main {
+		bitmap = bmp;
+		//bitmap = ((start)father).bitmap;
+		cx = bitmap_width(bitmap)  / 2;
+		cy = bitmap_height(bitmap) / 2;
+		z = father.z + 1;
+		
+		double n = 0;
+
+		draw_line(bitmap, 0, bitmap_height(bitmap) / 2, 639, bitmap_height(bitmap) / 2, color_make(255, 0, 0));
+		
+		while (true) {
+			n = n + 0.06;
+			y = (int)(((double)sinf((float)n)) * (double)40) + my;
+			x = mx;
+			size  = (int)(((double)sinf((float)n)) * (double)20) + 100;
+			alpha = (int)(((double)sinf((float)n)) * (double)55) + 200;
+			angle = angle + (float)0.7;
+			z     = 100 - (int)(((double)sinf((float)n)) * (double)55);
+			frame;
+		}
+	}
+	
+	draw {				
+		draw_bitmap(bitmap, NULL, x, y, cx, cy, (float)(alpha / (float)255), (float)((float)size / 100), angle);
+		draw_bitmap(bitmap, NULL, x, y, cx, cy, (float)(alpha / (float)255), (float)((float)size / 100), angle + 90);
+		draw_bitmap(milogo, NULL, 320, 240, bitmap_width(milogo) / 2, bitmap_height(milogo) / 2, (float)0.9, (float)1.0, 0);
+		
+		draw_line(NULL, 0, 240, 639, 240, color_make(255, 0, 0));
+		//draw_line(bitmap, 0, 50, 639, 50, color_make(255, 0, 0));
+	}
+}
+
+process start() {
+	action main {
+		mfont = font_create("Arial Narrow", 20);
+		
+		mus = music_load_from_resource("guitarou.mod");
+		//mus = music_load("guitarou.mod");
+		
+		bitmap = bitmap_load_from_resource("test.png");
+		milogo = bitmap_load_from_resource("logo.png");
+		//bitmap = bitmap_load("test.png");
+		cx = bitmap_width(bitmap)  / 2;
+		cy = bitmap_height(bitmap) / 2;
+		
+		new cursor();
+		new test(bitmap, 320, 240);
+		
+		new button(50, 50, 100, 30, 600);
+		new button(50, 90, 100, 30, 0);
+		new button(50, 130, 100, 30, -600);
+		
+		//music_play(mus);
+		
+		//music_play(mus);
+		
+		while (true) frame;
+	}
+	
+	draw {
+	}
+}

@@ -1,0 +1,90 @@
+config {
+	driver:           "clanlib";
+	//driver:           "none";
+
+	output:           "lunea.exe";
+
+	icon:             "icon.ico";
+
+	comments:         "Comments";
+	companyname:      "CompanyName";
+	filedescription:  "FileDescription";
+	fileversion:      "1, 0, 0, 1";
+	internalname:     "InternalName";
+	legalcopyright:   "LegalCopyright";
+	legaltrademarks:  "LegalTrademarks";
+	productname:      "ProductName";
+	productversion:   "1, 0, 0, 1";
+
+	//resource:         "resources\\*.png";
+	resource:         "test.png";
+	resource:         "cursor.png";
+}
+
+process cursor() {
+	action main {
+		bitmap = bitmap_load_from_resource("cursor.png");
+		cx = cy = 0;
+
+		mouse.hide();
+
+		while (true) {
+			x = mouse.x;
+			y = mouse.y;
+
+			if (mouse.clicked) {
+				new test(((start)father).bitmap, x, y);
+			}
+
+			frame;
+		}
+	}
+
+	draw {
+		draw_bitmap(bitmap, NULL, x, y, cx, cy, (float)(alpha / (float)255), (float)((float)size / 100), angle);
+	}
+}
+
+process test(Bitmap bmp, int mx, int my) {
+	action main {
+		bitmap = bmp;
+		//bitmap = ((start)father).bitmap;
+		cx = bitmap_width(bitmap)  / 2;
+		cy = bitmap_height(bitmap) / 2;
+		z = father.z + 1;
+
+		double n = 0;
+
+		while (true) {
+			n = n + 0.06;
+			y = (int)(((double)sinf((float)n)) * (double)40) + my;
+			x = mx;
+			size  = (int)(((double)sinf((float)n)) * (double)20) + 100;
+			alpha = (int)(((double)sinf((float)n)) * (double)55) + 200;
+			angle = angle + (float)0.7;
+			z     = 100 - (int)(((double)sinf((float)n)) * (double)55);
+			frame;
+		}
+	}
+
+	draw {
+		draw_bitmap(bitmap, NULL, x, y, cx, cy, (float)(alpha / (float)255), (float)((float)size / 100), angle);
+	}
+}
+
+process start() {
+	action main {
+		bitmap = bitmap_load_from_resource("test.png");
+		//bitmap = bitmap_load("test.png");
+		cx = bitmap_width(bitmap)  / 2;
+		cy = bitmap_height(bitmap) / 2;
+
+		new cursor();
+		new test(bitmap, 320, 240);
+
+		while (true) frame;
+	}
+
+	draw {
+	}
+}

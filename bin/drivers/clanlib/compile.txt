@@ -1,0 +1,1 @@
+/D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /MT /O1 /Op /GA /FD /EHsc /YX"stdafx.h" /W3 /TP
